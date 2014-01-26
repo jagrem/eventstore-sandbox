@@ -23,7 +23,7 @@ namespace EventStore.SandBox
 		
 			var metadata = Encoding.UTF8.GetBytes (JsonConvert.SerializeObject (eventToConvert.Header));
 			var data = eventToConvert.Body.EventData != null ? Encoding.UTF8.GetBytes(eventToConvert.Body.EventData) : new byte[0];
-			var eventData = new EventData (Guid.NewGuid(), eventToConvert.Body.EventType != null ? eventToConvert.Body.EventType.FullName : null, true, data, metadata);
+			var eventData = new EventData (Guid.NewGuid(), eventToConvert.Body.EventType != null ? eventToConvert.Body.EventType.AssemblyQualifiedName : null, true, data, metadata);
 			return eventData;
 		}
 

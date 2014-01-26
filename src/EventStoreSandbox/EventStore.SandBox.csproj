@@ -8,7 +8,7 @@
     <ProjectGuid>{AF51ACA7-529F-4A15-83BF-CF7018A7B655}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>EventStore.SandBox</RootNamespace>
-    <AssemblyName>EventStorePlayground</AssemblyName>
+    <AssemblyName>EventStore.SandBox</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -43,23 +43,9 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Event.cs" />
-    <Compile Include="EventHeader.cs" />
-    <Compile Include="IEvent.cs" />
-    <Compile Include="IEventHeader.cs" />
-    <Compile Include="IEventBody.cs" />
-    <Compile Include="EventBody.cs" />
-    <Compile Include="EventBuilder.cs" />
-    <Compile Include="EventDataConverter.cs" />
     <Compile Include="HelloWorld.cs" />
-    <Compile Include="IRawEvent.cs" />
-    <Compile Include="RawEvent.cs" />
-    <Compile Include="EventStoreAdapter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
@@ -76,4 +62,13 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EventStore.SandBox.Core\EventStore.SandBox.Core.csproj">
+      <Project>{7DA507F0-EAF1-40BA-98BC-6F50C336980A}</Project>
+      <Name>EventStore.SandBox.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

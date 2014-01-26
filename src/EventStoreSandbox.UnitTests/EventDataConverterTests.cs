@@ -110,10 +110,12 @@ namespace EventStore.SandBox.UnitTests
 		{
 			private EventData eventData;
 
+			private const string expectedEventId = "eventId";
+
 			[SetUp]
 			public void SetUp()
 			{
-				this.eventData = new EventDataConverter ().ToEventData (new AnyEvent (new AnyEventHeader { EventId = "eventId" }, new AnyEventBody {
+				this.eventData = new EventDataConverter ().ToEventData (new AnyEvent (new AnyEventHeader { EventId = expectedEventId }, new AnyEventBody {
 					EventData = "{}",
 					EventType = typeof(object)
 				}));
@@ -172,6 +174,20 @@ namespace EventStore.SandBox.UnitTests
 
 				actual.Body.EventType.Should ().Be<object> ();;
 				actual.Body.EventData.Should ().BeEmpty ();
+			}
+
+			[Test]
+			public void TestFromEventData()
+			{
+				var subject = new EventDataConverter ();
+
+				var actual = subject.FromEventData (new RawEvent (this.eventData.Type, this.eventData.Metadata, this.eventData.Data));
+
+				actual.Header.Should ().NotBeNull ();
+				actual.Header.EventId.Should ().Be (expectedEventId);
+				actual.Body.Should ().NotBeNull ();
+				actual.Body.EventType.Should ().Be<object> ();
+				actual.Body.EventData.Should ().Be ("{}");
 			}
 		}
 	}

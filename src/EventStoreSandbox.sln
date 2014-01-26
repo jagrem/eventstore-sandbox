@@ -5,12 +5,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.SandBox", "Event
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.SandBox.UnitTests", "EventStoreSandbox.UnitTests\EventStore.SandBox.UnitTests.csproj", "{80EFB441-C8FA-473E-8494-652D599E45C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.SandBox.Core", "EventStore.SandBox.Core\EventStore.SandBox.Core.csproj", "{7DA507F0-EAF1-40BA-98BC-6F50C336980A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7DA507F0-EAF1-40BA-98BC-6F50C336980A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7DA507F0-EAF1-40BA-98BC-6F50C336980A}.Debug|x86.Build.0 = Debug|Any CPU
+		{7DA507F0-EAF1-40BA-98BC-6F50C336980A}.Release|x86.ActiveCfg = Release|Any CPU
+		{7DA507F0-EAF1-40BA-98BC-6F50C336980A}.Release|x86.Build.0 = Release|Any CPU
 		{80EFB441-C8FA-473E-8494-652D599E45C0}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{80EFB441-C8FA-473E-8494-652D599E45C0}.Debug|x86.Build.0 = Debug|Any CPU
 		{80EFB441-C8FA-473E-8494-652D599E45C0}.Release|x86.ActiveCfg = Release|Any CPU

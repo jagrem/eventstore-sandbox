@@ -14,9 +14,11 @@ namespace EventStore.SandBox.UnitTests
 			var expectedData = "data";
 			var expectedType = typeof(string);
 
-			var subject = new Event (new AnyEventHeader { EventId = eventId }, new AnyEventBody {
-				EventType = expectedType,
-				EventData = expectedData
+			var subject = new Event (
+				new AnyEventHeader { EventId = eventId }, 
+				new AnyEventBody {
+					EventType = expectedType,
+					EventData = expectedData
 			});
 
 			subject.Header.Should ().NotBeNull ();

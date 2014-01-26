@@ -7,7 +7,7 @@ namespace EventStore.SandBox
 {
 	public class EventDataConverter
 	{
-		public EventData ToEventData(IEvent eventToConvert)
+		public EventData ToEventData (IEvent eventToConvert)
 		{
 			if (eventToConvert == null) {
 				throw new ArgumentNullException ("eventToConvert");
@@ -22,12 +22,16 @@ namespace EventStore.SandBox
 			}
 		
 			var metadata = Encoding.UTF8.GetBytes (JsonConvert.SerializeObject (eventToConvert.Header));
-			var data = eventToConvert.Body.EventData != null ? Encoding.UTF8.GetBytes(eventToConvert.Body.EventData) : new byte[0];
-			var eventData = new EventData (Guid.NewGuid(), eventToConvert.Body.EventType != null ? eventToConvert.Body.EventType.AssemblyQualifiedName : null, true, data, metadata);
+			var data = eventToConvert.Body.EventData != null 
+			           ? Encoding.UTF8.GetBytes (eventToConvert.Body.EventData) 
+			           : new byte[0];
+			var eventData = new EventData (Guid.NewGuid (), eventToConvert.Body.EventType != null 
+				? eventToConvert.Body.EventType.AssemblyQualifiedName 
+				: null, true, data, metadata);
 			return eventData;
 		}
 
-		public IEvent FromEventData(IRawEvent rawEvent)
+		public IEvent FromEventData (IRawEvent rawEvent)
 		{
 			if (rawEvent == null) {
 				throw new ArgumentNullException ("rawEvent");
@@ -37,10 +41,12 @@ namespace EventStore.SandBox
 				throw new ArgumentException ("Event metadata is required");
 			}
 
-			var eventHeader = JsonConvert.DeserializeObject<EventHeader>(Encoding.UTF8.GetString (rawEvent.Metadata));
+			var eventHeader = JsonConvert.DeserializeObject<EventHeader> (Encoding.UTF8.GetString (rawEvent.Metadata));
 			var eventType = Type.GetType (rawEvent.EventType);
-			var eventBody = eventType != null  && rawEvent.Data != null ? new EventBody (eventType, Encoding.UTF8.GetString (rawEvent.Data)) : EventBody.Empty();
-			return new Event(eventHeader, eventBody);
+			var eventBody = eventType != null && rawEvent.Data != null 
+			                ? new EventBody (eventType, Encoding.UTF8.GetString (rawEvent.Data)) 
+			                : EventBody.Empty ();
+			return new Event (eventHeader, eventBody);
 		}
 	}
 }

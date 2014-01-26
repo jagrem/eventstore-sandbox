@@ -2,8 +2,7 @@ using System;
 using EventStore.ClientAPI;
 using FluentAssertions;
 using NUnit.Framework;
-using System.Security.Policy;
-using System.Text;
+using Newtonsoft.Json;
 
 namespace EventStore.SandBox.UnitTests
 {
@@ -97,7 +96,7 @@ namespace EventStore.SandBox.UnitTests
 
 				actual.EventId.Should ().NotBeEmpty ();
 				actual.IsJson.Should ().BeTrue ();
-				actual.Type.Should ().Be (expectedEventType.FullName);
+				actual.Type.Should ().Be (expectedEventType.AssemblyQualifiedName);
 				actual.Metadata.Should ().NotBeNull ();
 				actual.Metadata.Should ().NotBeEmpty ();
 				actual.Data.Should ().NotBeNull ();
@@ -108,21 +107,27 @@ namespace EventStore.SandBox.UnitTests
 		[TestFixture]
 		internal class FromEventDataTests
 		{
-			private EventData eventData;
+			private class SimpleEvent
+			{
+				public string Name { get; set; }
+			}
 
+			private EventData eventData;
 			private const string expectedEventId = "eventId";
 
 			[SetUp]
-			public void SetUp()
+			public void SetUp ()
 			{
-				this.eventData = new EventDataConverter ().ToEventData (new AnyEvent (new AnyEventHeader { EventId = expectedEventId }, new AnyEventBody {
-					EventData = "{}",
-					EventType = typeof(object)
-				}));
+				this.eventData = new EventDataConverter ().ToEventData (
+					new AnyEvent (new AnyEventHeader { EventId = expectedEventId }, 
+					new AnyEventBody {
+						EventData = JsonConvert.SerializeObject (new SimpleEvent { Name = "A simple event" }),
+						EventType = typeof(SimpleEvent)
+					}));
 			}
 
 			[Test]
-			public void WhenRawEventIsNull()
+			public void WhenRawEventIsNull ()
 			{
 				var subject = new EventDataConverter ();
 
@@ -133,61 +138,66 @@ namespace EventStore.SandBox.UnitTests
 			}
 
 			[Test]
-			public void WhenRawEventMetadataIsNull()
+			public void WhenRawEventMetadataIsNull ()
 			{
 				var subject = new EventDataConverter ();
 
-				Action action = () => subject.FromEventData(new RawEvent(this.eventData.Type, null, this.eventData.Data));
+				Action action = () => subject.FromEventData (
+					new RawEvent (this.eventData.Type, null, this.eventData.Data));
 
 				action.ShouldThrow<ArgumentException> ()
 					.WithMessage ("*event metadata is required*");
 			}
 
 			[Test]
-			public void WhenRawEventMetadataIsEmpty()
+			public void WhenRawEventMetadataIsEmpty ()
 			{
 				var subject = new EventDataConverter ();
 
-				Action action = () => subject.FromEventData(new RawEvent(this.eventData.Type, new byte[0], this.eventData.Data));
+				Action action = () => subject.FromEventData (
+					new RawEvent (this.eventData.Type, new byte[0], this.eventData.Data));
 
 				action.ShouldThrow<ArgumentException> ()
 					.WithMessage ("*event metadata is required*");
 			}
 
 			[Test]
-			public void WhenRawEventDataIsNull()
+			public void WhenRawEventDataIsNull ()
 			{
 				var subject = new EventDataConverter ();
 
-				var actual = subject.FromEventData (new RawEvent (this.eventData.Type, this.eventData.Metadata, null));
+				var actual = subject.FromEventData (
+					new RawEvent (this.eventData.Type, this.eventData.Metadata, null));
 
 				actual.Body.EventType.Should ().BeNull ();
 				actual.Body.EventData.Should ().BeNull ();
 			}
 
 			[Test]
-			public void WhenRawEventDataIsEmpty()
+			public void WhenRawEventDataIsEmpty ()
 			{
 				var subject = new EventDataConverter ();
 
-				var actual = subject.FromEventData (new RawEvent (this.eventData.Type, this.eventData.Metadata, new byte[0]));
+				var actual = subject.FromEventData (
+					new RawEvent (this.eventData.Type, this.eventData.Metadata, new byte[0]));
 
-				actual.Body.EventType.Should ().Be<object> ();;
+				actual.Body.EventType.Should ().Be<SimpleEvent> ();
 				actual.Body.EventData.Should ().BeEmpty ();
 			}
 
 			[Test]
-			public void TestFromEventData()
+			public void TestFromEventData ()
 			{
 				var subject = new EventDataConverter ();
 
-				var actual = subject.FromEventData (new RawEvent (this.eventData.Type, this.eventData.Metadata, this.eventData.Data));
+				var actual = subject.FromEventData (
+					new RawEvent (this.eventData.Type, this.eventData.Metadata, this.eventData.Data));
 
 				actual.Header.Should ().NotBeNull ();
 				actual.Header.EventId.Should ().Be (expectedEventId);
 				actual.Body.Should ().NotBeNull ();
-				actual.Body.EventType.Should ().Be<object> ();
-				actual.Body.EventData.Should ().Be ("{}");
+				actual.Body.EventType.Should ().Be<SimpleEvent> ();
+				actual.Body.EventData.Should ().Be ("{\"Name\":\"A simple event\"}");
 			}
 		}
 	}

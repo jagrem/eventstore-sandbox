@@ -2,6 +2,8 @@ using System;
 using EventStore.ClientAPI;
 using FluentAssertions;
 using NUnit.Framework;
+using System.Security.Policy;
+using System.Text;
 
 namespace EventStore.SandBox.UnitTests
 {
@@ -106,6 +108,17 @@ namespace EventStore.SandBox.UnitTests
 		[TestFixture]
 		internal class FromEventDataTests
 		{
+			private EventData eventData;
+
+			[SetUp]
+			public void SetUp()
+			{
+				this.eventData = new EventDataConverter ().ToEventData (new AnyEvent (new AnyEventHeader { EventId = "eventId" }, new AnyEventBody {
+					EventData = "{}",
+					EventType = typeof(object)
+				}));
+			}
+
 			[Test]
 			public void WhenRawEventIsNull()
 			{
@@ -115,6 +128,50 @@ namespace EventStore.SandBox.UnitTests
 
 				action.ShouldThrow<ArgumentNullException> ()
 					.WithMessage ("*rawEvent*");
+			}
+
+			[Test]
+			public void WhenRawEventMetadataIsNull()
+			{
+				var subject = new EventDataConverter ();
+
+				Action action = () => subject.FromEventData(new RawEvent(this.eventData.Type, null, this.eventData.Data));
+
+				action.ShouldThrow<ArgumentException> ()
+					.WithMessage ("*event metadata is required*");
+			}
+
+			[Test]
+			public void WhenRawEventMetadataIsEmpty()
+			{
+				var subject = new EventDataConverter ();
+
+				Action action = () => subject.FromEventData(new RawEvent(this.eventData.Type, new byte[0], this.eventData.Data));
+
+				action.ShouldThrow<ArgumentException> ()
+					.WithMessage ("*event metadata is required*");
+			}
+
+			[Test]
+			public void WhenRawEventDataIsNull()
+			{
+				var subject = new EventDataConverter ();
+
+				var actual = subject.FromEventData (new RawEvent (this.eventData.Type, this.eventData.Metadata, null));
+
+				actual.Body.EventType.Should ().BeNull ();
+				actual.Body.EventData.Should ().BeNull ();
+			}
+
+			[Test]
+			public void WhenRawEventDataIsEmpty()
+			{
+				var subject = new EventDataConverter ();
+
+				var actual = subject.FromEventData (new RawEvent (this.eventData.Type, this.eventData.Metadata, new byte[0]));
+
+				actual.Body.EventType.Should ().Be<object> ();;
+				actual.Body.EventData.Should ().BeEmpty ();
 			}
 		}
 	}

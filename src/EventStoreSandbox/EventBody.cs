@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace EventStore.SandBox
 {
@@ -9,6 +10,8 @@ namespace EventStore.SandBox
 			this.EventType = eventType;
 			this.EventData = eventData;
 		}
+
+		public static EventBody Empty() { return new EventBody(null, null); }
 	
 		public Type EventType { get; private set; }
 

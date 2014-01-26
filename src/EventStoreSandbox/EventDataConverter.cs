@@ -33,8 +33,13 @@ namespace EventStore.SandBox
 				throw new ArgumentNullException ("rawEvent");
 			}
 
+			if (rawEvent.Metadata == null || rawEvent.Metadata.Length < 1) {
+				throw new ArgumentException ("Event metadata is required");
+			}
+
 			var eventHeader = JsonConvert.DeserializeObject<EventHeader>(Encoding.UTF8.GetString (rawEvent.Metadata));
-			var eventBody = new EventBody (Type.GetType(rawEvent.EventType), Encoding.UTF8.GetString(rawEvent.Data));
+			var eventType = Type.GetType (rawEvent.EventType);
+			var eventBody = eventType != null  && rawEvent.Data != null ? new EventBody (eventType, Encoding.UTF8.GetString (rawEvent.Data)) : EventBody.Empty();
 			return new Event(eventHeader, eventBody);
 		}
 	}

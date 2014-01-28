@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace EventStore.SandBox
 {
@@ -12,113 +10,81 @@ namespace EventStore.SandBox
 		public static void Main (string[] args)
 		{
 			Console.Write ("**** EVENTSTORE PLAYGROUND ****\nVersion: 0.0.1.0\nAuthor: James McAuley\nCopyright 2013\n******************************\n");
-			Stopwatch writeStopwatch = new Stopwatch ();
-			Stopwatch readStopwatch = new Stopwatch ();
-			var eventStore = new EventStoreAdapter ("10.1.1.11");
+			var eventStore = new EventStoreAdapter ("127.0.0.1");
 			Thread.Sleep (200);
+
 			var streamId = "events-" + Guid.NewGuid ();
-			const int size = 10;
-			int totalWrites = 0;
-			int totalReads = 0;
+			const int addItemsSize = 10;
 			bool isFlooding = false;
 			var expectedVersion = -1;
-			char c = '0';
+			var floodAgentCount = 0;
+			char userInputCharacter = '0';
+			var writeCounters = new List<StatsCounter> ();
+			var readCounters = new List<StatsCounter> ();
+			var cancellationTokenSource = new CancellationTokenSource ();
+			var cancellationToken = cancellationTokenSource.Token;
 
-			while (c != 'q') {
-				switch (c) {
+			while (userInputCharacter != 'q') {
+				switch (userInputCharacter) {
 				case 'n':
 					expectedVersion = -1;
 					streamId = "events-" + Guid.NewGuid ();
 					Console.Write ("\nCreating new stream with id {0}\n", streamId);
 					break;
 				case 'a':
-					writeStopwatch.Start ();
-					eventStore.SaveEventsWithId (streamId, CreateEvents (size), expectedVersion);
-					writeStopwatch.Stop ();
-					Console.Write ("\nSaving {0} events with id {1}\n", size, streamId);
-					expectedVersion += size;
-					totalWrites += size;
+					eventStore.SaveEventsWithId (streamId, TestEvents.CreateEvents (addItemsSize), expectedVersion);
+					Console.Write ("\nSaving {0} events with id {1}\n", addItemsSize, streamId);
+					expectedVersion += addItemsSize;
 					break;
 				case 'd':
 					eventStore.DeleteEventsWithId (streamId, expectedVersion);
 					Console.Write ("\nDeleting stream {0}\n", streamId);
 					expectedVersion = -1;
-					totalWrites += 1;
 					break;
 				case 'h':
-					readStopwatch.Start ();
 					var loadedEvents = eventStore.LoadEventsForId (streamId, 0).ToList ();
-					readStopwatch.Stop ();
 					Console.Write ("\nLoading {0} events for id {1}\n", loadedEvents.Count, streamId);
-					totalReads += loadedEvents.Count;
 					loadedEvents.ForEach (x => Console.WriteLine ("{0} | {1}", x.Header.EventId, x.Body.EventType));
 					break;
 				case 't':
-					readStopwatch.Start ();
 					var lastEvents = eventStore.LoadLastEventsForId (streamId, 5).ToList ();
-					readStopwatch.Stop ();
 					Console.Write ("\nLoading last {0} events for id {1}\n", lastEvents.Count, streamId);
-					totalReads += lastEvents.Count;
 					lastEvents.ForEach (x => Console.WriteLine ("{0} | {1}", x.Header.EventId, x.Body.EventType));
 					break;
 				case 'f':
-					Console.Write ("\nFlooding stream {0} with events\n[s]top\nplayground :", streamId);
-
-					//if (!isFlooding) {
+					if (!isFlooding) {
 						isFlooding = true;
+						floodAgentCount = 0;
+					}
 
-						// write
-						Task.Factory.StartNew (() => {
-							writeStopwatch.Start ();
-							var w_streamId = "events-" + Guid.NewGuid();
-							var w_expectedVersion = -1;
+					floodAgentCount++;
+					var id = "events-" + Guid.NewGuid ();
 
-							while (isFlooding) {
-								eventStore.SaveEventsWithId (w_streamId, CreateEvents (size), w_expectedVersion);
-								w_expectedVersion += size;
-								totalWrites += size;
-								Console.Write (".");
-							}
-							writeStopwatch.Stop ();
-						}).ContinueWith (t => Console.WriteLine (t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-
-						// read
-						Task.Factory.StartNew (() => {
-							readStopwatch.Start ();
-							while (isFlooding) {
-								if (c == 's') {
-									isFlooding = false;
-								}
-								var events = eventStore.LoadLastEventsForId (streamId, 100).ToList ();
-								totalReads += events.Count;
-								Console.Write ("*");
-							}
-							readStopwatch.Stop ();
-						}).ContinueWith (t => Console.WriteLine (t.Exception), TaskContinuationOptions.OnlyOnFaulted);
-					//}
+					writeCounters.Add(new WriteFloodAgent (floodAgentCount, id, cancellationToken , eventStore).Run());
+					readCounters.Add(new ReadFloodAgent (floodAgentCount, id, cancellationToken , eventStore).Run());
 					break;
 				case 's':
-					isFlooding = false;
+					cancellationTokenSource.Cancel ();
 					break;
 				}
 
-				Console.Write("\n[n]ew [a]dd, [d]elete, [h]istory [t]ail [q]uit\nplayground :");
-				c = (char)Console.Read ();
+				Console.Write("\n[n]ew [a]dd, [d]elete, [h]istory [t]ail [f]lood [s]top [q]uit\nplayground :");
+				userInputCharacter = (char)Console.Read ();
 			}
 
-			isFlooding = false;
+			cancellationTokenSource.Cancel ();
 			Console.WriteLine ("\nStopping...");
-			Console.WriteLine ("Wrote {0} events in {1}", totalWrites, writeStopwatch.Elapsed);
-			Console.WriteLine ("At an average of {0} writes per second", totalWrites/((double)writeStopwatch.Elapsed.Seconds));
-			Console.WriteLine ("Read {0} events in {1}", totalReads, readStopwatch.Elapsed);
-			Console.WriteLine ("At an average of {0} reads per second", totalReads/((double)readStopwatch.Elapsed.Seconds));
+			var totalWriteEvents = writeCounters.Sum (x => x.TotalEvents);
+			var writesTimeSpan = new TimeSpan (writeCounters.Sum (x => x.TotalTime.Ticks));
+			Console.WriteLine ("Wrote {0} events in {1}", totalWriteEvents, writesTimeSpan);
+			Console.WriteLine ("At an average of {0} writes per second", totalWriteEvents/((double)writesTimeSpan.Seconds));
+
+			var totalReadEvents = readCounters.Sum (x => x.TotalEvents);
+			var readsTimeSpan = new TimeSpan (readCounters.Sum (x => x.TotalTime.Ticks));
+			Console.WriteLine ("Read {0} events in {1}", totalReadEvents, readsTimeSpan);
+			Console.WriteLine ("At an average of {0} reads per second", totalReadEvents/((double)readsTimeSpan.Seconds));
 		}
 
-		private static IEnumerable<Event> CreateEvents(int count)
-		{
-			var builder = EventBuilder.Create();
-			return Enumerable.Range (1, count).Select (x => builder.Build (new HelloWorld { Message = "Hi" }));
-		}
+
 	}
-
 }

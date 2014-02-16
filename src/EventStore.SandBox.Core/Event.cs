@@ -11,5 +11,7 @@ namespace EventStore.SandBox
 		public IEventHeader Header { get; set; }
 
 		public IEventBody Body { get; set; }
+
+		public IEventType Any { get { return new Any (); }}
 	}
 }

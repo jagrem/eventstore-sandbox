@@ -10,7 +10,7 @@ namespace EventStore.SandBox
 		public static void Main (string[] args)
 		{
 			Console.Write ("**** EVENTSTORE PLAYGROUND ****\nVersion: 0.0.1.0\nAuthor: James McAuley\nCopyright 2013\n******************************\n");
-			var eventStore = new EventStoreAdapter ("127.0.0.1");
+			var eventStore = new EventStoreAdapter ("10.1.1.11");
 			Thread.Sleep (200);
 
 			var streamId = "events-" + Guid.NewGuid ();
@@ -84,7 +84,5 @@ namespace EventStore.SandBox
 			Console.WriteLine ("Read {0} events in {1}", totalReadEvents, readsTimeSpan);
 			Console.WriteLine ("At an average of {0} reads per second", totalReadEvents/((double)readsTimeSpan.Seconds));
 		}
-
-
 	}
 }

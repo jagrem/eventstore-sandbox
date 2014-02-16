@@ -4,6 +4,7 @@ using EventStore.ClientAPI;
 using EventStore.ClientAPI.SystemData;
 using System;
 using System.Net;
+using EventStore.ClientAPI.Common.Log;
 
 namespace EventStore.SandBox
 {	
@@ -12,6 +13,8 @@ namespace EventStore.SandBox
 		private readonly IEventStoreConnection connection;
 
 		private readonly EventDataConverter converter;
+
+		private readonly ProjectionsManager projectionsManager;
 
 		public EventStoreAdapter(string ipAddress)
 		{
@@ -25,11 +28,14 @@ namespace EventStore.SandBox
 				.OnReconnecting (connection => Console.WriteLine ("Reconnecting."))
 				.EnableVerboseLogging ();
 
+			var iPEndPoint = new IPEndPoint (IPAddress.Parse (ipAddress), 1113);
 			this.connection = EventStoreConnection.Create (
 				connectionSettings, 
-				new IPEndPoint (IPAddress.Parse(ipAddress), 1113));
+				iPEndPoint);
 			this.converter = new EventDataConverter ();
 			this.connection.Connect();
+
+			this.projectionsManager = new ProjectionsManager (new NoopLogger (), iPEndPoint);
 		}
 
 		public void SaveEventsWithId(string id, IEnumerable<Event> events, int expectedVersion)
@@ -67,6 +73,11 @@ namespace EventStore.SandBox
 		public async void DeleteEventsWithId(string id, int expectedVersion)
 		{
 			await this.connection.DeleteStreamAsync (id, expectedVersion);
+		}
+
+		public async void SaveProjection(Projection projection)
+		{
+			await this.projectionsManager.CreateOneTimeAsync (projection.GetJson ());
 		}
 	}
 }

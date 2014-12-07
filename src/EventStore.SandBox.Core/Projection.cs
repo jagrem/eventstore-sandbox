@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using EventStore.SandBox;
 
 namespace EventStore.SandBox
 {
 	public class Projection
 	{
+		// Use MethodInfo.GetMethodBody().GetILAsByteArray() 
+		// to pass IL to MSIL to JavaScript compiler
+
 		private string json = string.Empty;
 
 		public Projection (string projectionName)
@@ -58,9 +63,21 @@ namespace EventStore.SandBox
 			return this;
 		}
 
+		public Projection WhenAny(string rawJson)
+		{
+			this.json += string.Format(@".whenAny({0})", rawJson);
+			return this;
+		}
+
 		public Projection WhenAny(Func<object, IEvent, object> onWhenAny)
 		{
 			this.json += ".whenAny(function(s,e) { return null; })";
+			return this;
+		}			
+
+		public Projection When(string eventType, string rawJson)
+		{
+			this.json += string.Format (".when({{ '{0}':{1} }})", eventType, rawJson);
 			return this;
 		}
 
@@ -76,16 +93,9 @@ namespace EventStore.SandBox
 			return this;
 		}
 
-		public string GetJson()
+		public string ToJson()
 		{
 			return json;
 		}
 	}
-
-	public enum ProjectionType
-	{
-		Continuous,
-		OneTime
-	}
 }
-

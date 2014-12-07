@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{7DA507F0-EAF1-40BA-98BC-6F50C336980A}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -51,10 +51,11 @@
     <Compile Include="RawEvent.cs" />
     <Compile Include="EventStoreAdapter.cs" />
     <Compile Include="EventDataConverter.cs" />
-    <Compile Include="Projection.cs" />
     <Compile Include="IEventType.cs" />
     <Compile Include="EventTypes\Any.cs" />
     <Compile Include="EventType.cs" />
+    <Compile Include="Projection.cs" />
+    <Compile Include="ProjectionType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -77,7 +77,7 @@ namespace EventStore.SandBox
 
 		public async void SaveProjection(Projection projection)
 		{
-			await this.projectionsManager.CreateOneTimeAsync (projection.GetJson ());
+			await this.projectionsManager.CreateOneTimeAsync (projection.ToJson ());
 		}
 	}
 }

@@ -12,6 +12,6 @@ namespace EventStore.SandBox
 
 		public IEventBody Body { get; set; }
 
-		public IEventType Any { get { return new Any (); }}
+		public static IEventType Any { get { return new Any (); }}
 	}
 }

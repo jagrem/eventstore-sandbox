@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{80EFB441-C8FA-473E-8494-652D599E45C0}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -54,6 +54,9 @@
     <Compile Include="EventBodyTests.cs" />
     <Compile Include="EventTests.cs" />
     <Compile Include="ProjectionTests.cs" />
+    <Compile Include="Scenarios\CustomerPurchases\PurchaseAccepted.cs" />
+    <Compile Include="Scenarios\CustomerPurchases\PurchaseRejected.cs" />
+    <Compile Include="Scenarios\CustomerPurchases\PurchasesByCustomerProjection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -64,5 +67,9 @@
       <Project>{7DA507F0-EAF1-40BA-98BC-6F50C336980A}</Project>
       <Name>EventStore.SandBox.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Scenarios\" />
+    <Folder Include="Scenarios\CustomerPurchases\" />
   </ItemGroup>
 </Project>
